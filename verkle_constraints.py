@@ -16,6 +16,9 @@ def bench(n,f,N):
     def fo(i):
         return '{:,}'.format(int(i)).replace(',', ' ')
     
+    def poseidon(s):
+        return s / 8 * 505
+
     def multiexp(s,decomp=False,check=False):
         ratio = 52 # exp. ratio found, between the size and the number of additions
         order = 256
@@ -29,17 +32,17 @@ def bench(n,f,N):
     
     # Verkle tree part
     # verkle tree encoding checks - we only take the x coordinate (we check points are correct)
-    verkle = N * (d)  * c_check
+    verkle = N * (d-1)  * c_check
     
     # Multi point opening part
-    multi = 3 * c_h * N / 8 # hashes
-    multi += 3 * d * N # compute g2(t)
-    nmexp = d* N # Individual verification, no batching
+    multi = poseidon(N * (d-1))
+    multi += 3 * (d-1) * N # compute g2(t)
+    nmexp = (d-1) * N # Individual verification, no batching
     # knmexp = 
     multi += multiexp(nmexp) # commitment to g1 - points are already checked at previous part
     
     # IPA verification
-    ipa = lf * c_h # intermediate challenges computation
+    ipa = poseidon(lf) # intermediate challenges computation
     ipa += multiexp(lf * 2) # intermediate commitments computation
     ipa += lf * 3 # final polynomial for bases
     ipa += multiexp(f,check=True) # Compute g'
