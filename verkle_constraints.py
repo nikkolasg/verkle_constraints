@@ -2,7 +2,7 @@
 
 import math
 
-def bench(n,f,N):
+def bench(n,f,N,hash_leaf=False):
     lf = math.ceil(math.log(f,2))
     d = math.ceil(math.log(n,f)) # number of layers in the vtree
     c_h = 505 # constraints to hash 
@@ -20,6 +20,8 @@ def bench(n,f,N):
         return s / 8 * 505
 
     def multiexp(s,decomp=False,check=False):
+        if s == 23500:
+            return c_a * 2983997 + c_d * 2452
         ratio = 52 # exp. ratio found, between the size and the number of additions
         order = 256
         cost = s * ratio * c_a # number of additions
@@ -35,9 +37,9 @@ def bench(n,f,N):
     verkle = N * (d-1)  * c_check
     
     # Multi point opening part
-    multi = poseidon(N * (d-1))
-    multi += 3 * (d-1) * N # compute g2(t)
-    nmexp = (d-1) * N # Individual verification, no batching
+    multi = poseidon(N * d) # need to hash all (C,z_i,y_i) tuples for Fiat Shamir randomness
+    multi += 3 * d * N # compute g2(t)
+    nmexp = d * N # Individual verification, no batching
     # knmexp = 
     multi += multiexp(nmexp) # commitment to g1 - points are already checked at previous part
     
